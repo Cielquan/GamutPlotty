@@ -1,0 +1,7 @@
+[package]
+name = "color_calc"
+description = "Collection of formulas used in colorimetric calculations."
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]

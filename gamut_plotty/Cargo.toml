@@ -1,0 +1,8 @@
+[package]
+name = "gamutplotty"
+description = "A tool to visualize different color points in a Gamut color space."
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+color_calc = { path = "../color_calc" }

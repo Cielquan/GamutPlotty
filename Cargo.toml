@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "color_calc",
+    "gamut_plotty",
+]
+resolver = "3"
+
+[workspace.dependencies]
