@@ -1,8 +1,10 @@
 [workspace]
 members = [
+    "color_calc_core",
     "color_calc",
     "gamut_plotty",
 ]
 resolver = "3"
 
 [workspace.dependencies]
+rstest = "0.26.1"
