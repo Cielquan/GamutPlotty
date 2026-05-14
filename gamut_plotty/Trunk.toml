@@ -1,0 +1,5 @@
+[build]
+filehash = false
+
+# Ensure the output directory is correct
+dist = "../dist" 
