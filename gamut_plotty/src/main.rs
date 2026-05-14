@@ -21,7 +21,7 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Gamut Plotty",
         native_options,
-        Box::new(|cc| Ok(Box::new(gamut_plotty::TemplateApp::new(cc)))),
+        Box::new(|cc| Ok(Box::new(gamut_plotty::GamutPlottyApp::new(cc)))),
     )
 }
 
@@ -51,7 +51,7 @@ fn main() {
             .start(
                 canvas,
                 web_options,
-                Box::new(|cc| Ok(Box::new(gamut_plotty::TemplateApp::new(cc)))),
+                Box::new(|cc| Ok(Box::new(gamut_plotty::GamutPlottyApp::new(cc)))),
             )
             .await;
 
