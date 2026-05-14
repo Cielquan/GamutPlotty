@@ -1,4 +1,5 @@
 use color_calc::CIELAB;
+use egui::{AtomExt, Button, IntoAtoms};
 
 use crate::dummy_state::create_color_points;
 
@@ -68,7 +69,86 @@ impl eframe::App for GamutPlottyApp {
                     ui.add_space(16.0);
                 }
 
-                egui::widgets::global_theme_preference_buttons(ui);
+                let mut theme_preference = ui.options(|opt| opt.theme_preference);
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.horizontal(|ui| {
+                        let current_system_theme =
+                            if let Some(system_theme) = ui.input(|i| i.raw.system_theme) {
+                                match system_theme {
+                                    egui::Theme::Dark => "dark",
+                                    egui::Theme::Light => "light",
+                                }
+                            } else {
+                                "unknown"
+                            };
+
+                        fn theme_button<'a, Value: PartialEq>(
+                            ui: &mut egui::Ui,
+                            current_value: &mut Value,
+                            selected_value: Value,
+                            contents: impl IntoAtoms<'a>,
+                        ) -> egui::Response {
+                            let btn = Button::new(contents)
+                                .selected(*current_value == selected_value)
+                                .frame_when_inactive(*current_value == selected_value)
+                                .image_tint_follows_text_color(true)
+                                .frame(true);
+                            let mut response = ui.add(btn);
+                            if response.clicked() && *current_value != selected_value {
+                                *current_value = selected_value;
+                                response.mark_changed();
+                            }
+                            response
+                        }
+
+                        theme_button(
+                            ui,
+                            &mut theme_preference,
+                            egui::ThemePreference::Light,
+                            (
+                                egui::Image::new(egui::include_image!(
+                                    "../../assets/images/sun.svg"
+                                ))
+                                .atom_max_height_font_size(ui),
+                                "Light",
+                            ),
+                        )
+                        .on_hover_text("Use light mode");
+
+                        theme_button(
+                            ui,
+                            &mut theme_preference,
+                            egui::ThemePreference::Dark,
+                            (
+                                egui::Image::new(egui::include_image!(
+                                    "../../assets/images/moon.svg"
+                                )),
+                                "Dark",
+                            ),
+                        )
+                        .on_hover_text("Use dark mode");
+
+                        theme_button(
+                            ui,
+                            &mut theme_preference,
+                            egui::ThemePreference::System,
+                            (
+                                egui::Image::new(egui::include_image!(
+                                    "../../assets/images/sun-moon.svg"
+                                )),
+                                "System",
+                            ),
+                        )
+                        .on_hover_ui(|ui| {
+                            ui.label("Follow system theme");
+                            ui.add_space(4.0);
+                            ui.label(format!(
+                                "The current system theme is: {current_system_theme}"
+                            ));
+                        });
+                    });
+                    ui.ctx().set_theme(theme_preference);
+                });
             });
         });
 
