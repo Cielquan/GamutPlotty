@@ -21,7 +21,10 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Gamut Plotty",
         native_options,
-        Box::new(|cc| Ok(Box::new(gamut_plotty::GamutPlottyApp::new(cc)))),
+        Box::new(|cc| {
+            egui_extras::install_image_loaders(&cc.egui_ctx);
+            Ok(Box::new(gamut_plotty::GamutPlottyApp::new(cc)))
+        }),
     )
 }
 
