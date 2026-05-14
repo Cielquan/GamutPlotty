@@ -1,4 +1,7 @@
-/// We derive Deserialize/Serialize so we can persist app state on shutdown.
+use color_calc::CIELAB;
+
+use crate::dummy_state::create_color_points;
+
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct GamutPlottyApp {
@@ -7,6 +10,7 @@ pub struct GamutPlottyApp {
 
     #[serde(skip)] // This how you opt-out of serialization of a field
     value: f32,
+    color_points: Vec<CIELAB::LabPoint>,
 }
 
 impl Default for GamutPlottyApp {
@@ -15,6 +19,7 @@ impl Default for GamutPlottyApp {
             // Example stuff:
             label: "Hello World!".to_owned(),
             value: 2.7,
+            color_points: create_color_points(),
         }
     }
 }
