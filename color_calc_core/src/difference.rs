@@ -336,20 +336,17 @@ mod tests {
         assert!(
             diff < epsilon,
             "CIE76 calculation failed.\n\
-            Target (L,a,b): ({:.4}, {:.4}, {:.4})\n\
-            Sample (L,a,b): ({:.4}, {:.4}, {:.4})\n\
-            Expected ΔE:    {}\n\
-            Actual ΔE:      {}\n\
-            Difference:     {}",
-            target.0,
-            target.1,
-            target.2,
-            sample.0,
-            sample.1,
-            sample.2,
-            expected,
-            result,
-            diff
+            Target (L,a,b): ({l_ref:.4}, {a_ref:.4}, {b_ref:.4})\n\
+            Sample (L,a,b): ({l_sam:.4}, {a_sam:.4}, {b_sam:.4})\n\
+            Expected ΔE:    {expected}\n\
+            Actual ΔE:      {result}\n\
+            Difference:     {diff}",
+            l_ref = target.0,
+            a_ref = target.1,
+            b_ref = target.2,
+            l_sam = sample.0,
+            a_sam = sample.1,
+            b_sam = sample.2,
         );
     }
 
@@ -375,22 +372,18 @@ mod tests {
         assert!(
             diff < epsilon,
             "CIE94 calculation failed.\n\
-            Target (L,a,b): ({:.4}, {:.4}, {:.4})\n\
-            Sample (L,a,b): ({:.4}, {:.4}, {:.4})\n\
-            Param:          {:?}\n\
-            Expected ΔE:    {}\n\
-            Actual ΔE:      {}\n\
-            Difference:     {}",
-            target.0,
-            target.1,
-            target.2,
-            sample.0,
-            sample.1,
-            sample.2,
-            param,
-            expected,
-            result,
-            diff
+            Target (L,a,b): ({l_ref:.4}, {a_ref:.4}, {b_ref:.4})\n\
+            Sample (L,a,b): ({l_sam:.4}, {a_sam:.4}, {b_sam:.4})\n\
+            Param:          {param:?}\n\
+            Expected ΔE:    {expected}\n\
+            Actual ΔE:      {result}\n\
+            Difference:     {diff}",
+            l_ref = target.0,
+            a_ref = target.1,
+            b_ref = target.2,
+            l_sam = sample.0,
+            a_sam = sample.1,
+            b_sam = sample.2,
         );
     }
 
@@ -425,12 +418,12 @@ mod tests {
             "─".repeat(name_col_width + 2),
         );
 
-        println!("{}", top_border);
+        println!("{top_border}");
         println!(
             "│ {:<name_col_width$} │    Expected │         Got │     Diff │",
             "Name",
         );
-        println!("{}", mid_border);
+        println!("{mid_border}");
 
         for (idx, exp, got, diff) in errors {
             println!(
@@ -439,7 +432,7 @@ mod tests {
             );
         }
 
-        println!("{}", bot_border);
+        println!("{bot_border}");
     }
 
     const TEST_VALUE_NAMES: [&str; 14] = [
@@ -543,22 +536,18 @@ mod tests {
         assert!(
             diff < epsilon,
             "CMC l:c calculation failed.\n\
-            Target (L,a,b): ({:.4}, {:.4}, {:.4})\n\
-            Sample (L,a,b): ({:.4}, {:.4}, {:.4})\n\
-            Param:          {:?}\n\
-            Expected ΔE:    {}\n\
-            Actual ΔE:      {}\n\
-            Difference:     {}",
-            target.0,
-            target.1,
-            target.2,
-            sample.0,
-            sample.1,
-            sample.2,
-            param,
-            expected,
-            result,
-            diff
+            Target (L,C,h): ({l_ref:.4}, {c_ref:.4}, {h_ref:.4})\n\
+            Sample (L,C,h): ({l_sam:.4}, {c_sam:.4}, {h_sam:.4})\n\
+            Param:          {param:?}\n\
+            Expected ΔE:    {expected}\n\
+            Actual ΔE:      {result}\n\
+            Difference:     {diff}",
+            l_ref = target.0,
+            c_ref = target.1,
+            h_ref = target.2,
+            l_sam = sample.0,
+            c_sam = sample.1,
+            h_sam = sample.2,
         );
     }
 }
