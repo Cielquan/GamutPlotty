@@ -8,7 +8,7 @@ use color_calc_core::difference::{
 };
 use thiserror::Error;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, serde::Deserialize, serde::Serialize)]
 pub struct LabPoint {
     pub(crate) L: f64,
     pub(crate) a: f64,

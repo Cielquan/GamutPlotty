@@ -15,7 +15,7 @@ color_calc = { path = "../color_calc" }
 egui = "0.34.2"
 eframe = { version = "0.34.2", features = ["persistence"] }
 log = "0.4.29"
-serde = { version = "1.0.228", features = ["derive"] }
+serde = { workspace = true }
 
 # native:
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]

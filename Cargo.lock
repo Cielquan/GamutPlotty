@@ -682,6 +682,7 @@ name = "color_calc"
 version = "0.1.0"
 dependencies = [
  "color_calc_core",
+ "serde",
  "thiserror 2.0.18",
 ]
 

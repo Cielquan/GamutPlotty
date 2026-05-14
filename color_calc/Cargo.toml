@@ -7,3 +7,4 @@ edition = "2024"
 [dependencies]
 thiserror = "^2"
 color_calc_core = { path = "../color_calc_core" }
+serde = { workspace = true }
