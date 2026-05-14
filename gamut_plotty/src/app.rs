@@ -2,8 +2,11 @@ use color_calc::CIELAB;
 
 use crate::dummy_state::create_color_points;
 
+const APP_NAME: &str = "Gamut Plotty";
+const APP_KEY: &str = "gamut_plotty_app";
+
 #[derive(serde::Deserialize, serde::Serialize)]
-#[serde(default)] // if we add new fields, give them default values when deserializing old state
+#[serde(default)]
 pub struct GamutPlottyApp {
     // Example stuff:
     label: String,
@@ -17,7 +20,7 @@ impl Default for GamutPlottyApp {
     fn default() -> Self {
         Self {
             // Example stuff:
-            label: "Hello World!".to_owned(),
+            label: APP_NAME.to_owned(),
             value: 2.7,
             color_points: create_color_points(),
         }
@@ -31,9 +34,8 @@ impl GamutPlottyApp {
         // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
 
         // Load previous app state (if any).
-        // Note that you must enable the `persistence` feature for this to work.
         if let Some(storage) = cc.storage {
-            eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default()
+            eframe::get_value(storage, APP_KEY).unwrap_or_default()
         } else {
             Default::default()
         }
@@ -43,7 +45,7 @@ impl GamutPlottyApp {
 impl eframe::App for GamutPlottyApp {
     /// Called by the framework to save state before shutdown.
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, eframe::APP_KEY, self);
+        eframe::set_value(storage, APP_KEY, self);
     }
 
     /// Called each time the UI needs repainting, which may be many times per second.
@@ -72,7 +74,7 @@ impl eframe::App for GamutPlottyApp {
 
         egui::CentralPanel::default().show_inside(ui, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
-            ui.heading("eframe template");
+            ui.heading(APP_NAME);
 
             ui.horizontal(|ui| {
                 ui.label("Write something: ");
