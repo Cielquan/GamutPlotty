@@ -12,7 +12,7 @@ targets = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-gnu", "wasm32-unknown-
 [dependencies]
 color_calc = { path = "../color_calc" }
 
-egui = "0.34.2"
+egui = { version = "0.34.2", features = ["color-hex"] }
 egui_extras = { version = "0.34.2", features = ["svg"] }
 eframe = { version = "0.34.2", features = ["persistence"] }
 log = "0.4.29"
