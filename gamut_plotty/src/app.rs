@@ -5,6 +5,7 @@ use egui::{
 };
 
 use crate::dummy_state::create_color_points;
+use crate::gamut_data;
 
 const APP_NAME: &str = "Gamut Plotty";
 const APP_KEY: &str = "gamut_plotty_app";
@@ -13,12 +14,16 @@ const APP_KEY: &str = "gamut_plotty_app";
 #[serde(default)]
 pub struct GamutPlottyApp {
     color_points: Vec<CIELAB::LabPoint>,
+    selected_illuminant: gamut_data::Illuminant,
+    selected_observer: gamut_data::Observer,
 }
 
 impl Default for GamutPlottyApp {
     fn default() -> Self {
         Self {
             color_points: create_color_points(),
+            selected_illuminant: gamut_data::Illuminant::default(),
+            selected_observer: gamut_data::Observer::default(),
         }
     }
 }
