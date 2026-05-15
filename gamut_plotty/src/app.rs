@@ -12,20 +12,12 @@ const APP_KEY: &str = "gamut_plotty_app";
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct GamutPlottyApp {
-    // Example stuff:
-    label: String,
-
-    #[serde(skip)] // This how you opt-out of serialization of a field
-    value: f32,
     color_points: Vec<CIELAB::LabPoint>,
 }
 
 impl Default for GamutPlottyApp {
     fn default() -> Self {
         Self {
-            // Example stuff:
-            label: APP_NAME.to_owned(),
-            value: 2.7,
             color_points: create_color_points(),
         }
     }
@@ -154,16 +146,6 @@ impl eframe::App for GamutPlottyApp {
         CentralPanel::default().show_inside(ui, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
             ui.heading(APP_NAME);
-
-            ui.horizontal(|ui| {
-                ui.label("Write something: ");
-                ui.text_edit_singleline(&mut self.label);
-            });
-
-            ui.add(egui::Slider::new(&mut self.value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
-                self.value += 1.0;
-            }
 
             ui.separator();
 
