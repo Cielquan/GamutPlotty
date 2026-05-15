@@ -19,8 +19,9 @@ pub use cie_d65_2deg_2015::GAMUT_BOUNDARY as D65_2DEG_2015;
 pub use cie_d65_10deg_1964::GAMUT_BOUNDARY as D65_10DEG_1964;
 pub use cie_d65_10deg_2015::GAMUT_BOUNDARY as D65_10DEG_2015;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum Observer {
+    #[default]
     CIE2deg1931,
     CIE2deg2015,
     CIE10deg1964,
@@ -38,9 +39,10 @@ impl fmt::Display for Observer {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum Illuminant {
     D50,
+    #[default]
     D65,
 }
 
