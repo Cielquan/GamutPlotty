@@ -1,7 +1,8 @@
 use color_calc::CIELAB;
 use egui::{
-    Align, AtomExt, Button, CentralPanel, Color32, Frame, Image, IntoAtoms, Layout, MenuBar, Panel,
-    Pos2, Rect, Theme, ThemePreference, emath, epaint, hex_color, include_image, pos2,
+    Align, AtomExt, Button, CentralPanel, Color32, ComboBox, Frame, Image, IntoAtoms, Layout,
+    MenuBar, Panel, Pos2, Rect, Theme, ThemePreference, emath, epaint, hex_color, include_image,
+    pos2,
 };
 
 use crate::dummy_state::create_color_points;
@@ -151,6 +152,52 @@ impl eframe::App for GamutPlottyApp {
         CentralPanel::default().show_inside(ui, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
             ui.heading(APP_NAME);
+
+            ui.separator();
+
+            ui.horizontal(|ui| {
+                ComboBox::from_label("Illuminant")
+                    .selected_text(self.selected_illuminant.to_string())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(
+                            &mut self.selected_illuminant,
+                            gamut_data::Illuminant::D50,
+                            gamut_data::Illuminant::D50.to_string(),
+                        );
+                        ui.selectable_value(
+                            &mut self.selected_illuminant,
+                            gamut_data::Illuminant::D65,
+                            gamut_data::Illuminant::D65.to_string(),
+                        );
+                    });
+
+                ComboBox::from_label("Observer")
+                    .selected_text(self.selected_observer.to_string())
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(
+                            &mut self.selected_observer,
+                            gamut_data::Observer::CIE2deg1931,
+                            gamut_data::Observer::CIE2deg1931.to_string(),
+                        );
+                        ui.selectable_value(
+                            &mut self.selected_observer,
+                            gamut_data::Observer::CIE2deg2015,
+                            gamut_data::Observer::CIE2deg2015.to_string(),
+                        );
+                        ui.selectable_value(
+                            &mut self.selected_observer,
+                            gamut_data::Observer::CIE10deg1964,
+                            gamut_data::Observer::CIE10deg1964.to_string(),
+                        );
+                        ui.selectable_value(
+                            &mut self.selected_observer,
+                            gamut_data::Observer::CIE10deg2015,
+                            gamut_data::Observer::CIE10deg2015.to_string(),
+                        );
+                    });
+            });
+
+            ui.separator();
 
             Frame::canvas(ui.style()).show(ui, |ui| {
                 ui.request_repaint();
