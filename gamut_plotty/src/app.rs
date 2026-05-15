@@ -228,13 +228,38 @@ impl eframe::App for GamutPlottyApp {
             ui.separator();
 
             Frame::group(ui.style()).show(ui, |ui| {
+                let group_rect = ui.response().rect;
+                let group_center = group_rect.center();
+                let painter = ui.painter().with_clip_rect(group_rect);
+
+                let response = ui.allocate_response(ui.available_size(), Sense::drag());
+                let is_hovered = response.hovered();
+
+                if is_hovered {
+                    let scroll_delta = ui.ctx().input(|i| i.smooth_scroll_delta);
+                    if scroll_delta.y != 0.0 {
+                        // positiv > scroll up; negative > scroll down
+                        let factor = 1.0 + scroll_delta.y * 0.001;
+                        self.camera_settings.zoom =
+                            (self.camera_settings.zoom * factor).clamp(MIN_ZOOM, MAX_ZOOM);
+                    }
+                }
+
+                if is_hovered && response.dragged() {
+                    let delta = response.drag_delta();
+                    let rot_y = glam::Quat::from_rotation_y(
+                        -delta.x * self.camera_settings.rotation_sensitivity,
+                    );
+                    let rot_x = glam::Quat::from_rotation_x(
+                        -delta.y * self.camera_settings.rotation_sensitivity,
+                    );
+                    self.camera_settings.rotation = rot_y * rot_x * self.camera_settings.rotation;
+                }
+
                 let gamut_boundary = gamut_data::get_gamut_boundary_data(
                     self.selected_observer,
                     self.selected_illuminant,
                 );
-
-                let center = ui.available_size() / 2.0;
-                let painter = ui.painter();
 
                 let projected: Vec<Pos2> = gamut_boundary
                     .iter()
@@ -257,7 +282,7 @@ impl eframe::App for GamutPlottyApp {
                         let x = rotated_point.x * scale;
                         let y = rotated_point.y * scale;
                         // Map to screen coordinates (Flip Y because screen Y is down)
-                        Some(Pos2::new(center.x + x, center.y - y))
+                        Some(Pos2::new(group_center.x + x, group_center.y - y))
                     })
                     .filter_map(|v| v)
                     .collect();
@@ -271,28 +296,6 @@ impl eframe::App for GamutPlottyApp {
                 // Close the loop
                 if let (Some(first), Some(last)) = (projected.first(), projected.last()) {
                     painter.line_segment([*last, *first], Stroke::new(1.0, Color32::GRAY));
-                }
-
-                let response = ui.allocate_response(ui.available_size(), Sense::drag());
-                if response.hovered() {
-                    let scroll_delta = ui.ctx().input(|i| i.smooth_scroll_delta);
-                    if scroll_delta.y != 0.0 {
-                        // positiv > scroll up; negative > scroll down
-                        let factor = 1.0 + scroll_delta.y * 0.001;
-                        self.camera_settings.zoom =
-                            (self.camera_settings.zoom * factor).clamp(MIN_ZOOM, MAX_ZOOM);
-                    }
-                }
-
-                if response.dragged() {
-                    let delta = response.drag_delta();
-                    let rot_y = glam::Quat::from_rotation_y(
-                        -delta.x * self.camera_settings.rotation_sensitivity,
-                    );
-                    let rot_x = glam::Quat::from_rotation_x(
-                        -delta.y * self.camera_settings.rotation_sensitivity,
-                    );
-                    self.camera_settings.rotation = rot_y * rot_x * self.camera_settings.rotation;
                 }
             });
 
