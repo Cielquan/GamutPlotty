@@ -17,6 +17,7 @@ pub struct GamutPlottyApp {
     color_points: Vec<CIELAB::LabPoint>,
     selected_illuminant: gamut_data::Illuminant,
     selected_observer: gamut_data::Observer,
+    camera_settings: CameraSettings,
 }
 
 impl Default for GamutPlottyApp {
@@ -25,6 +26,34 @@ impl Default for GamutPlottyApp {
             color_points: create_color_points(),
             selected_illuminant: gamut_data::Illuminant::default(),
             selected_observer: gamut_data::Observer::default(),
+            camera_settings: CameraSettings::default(),
+        }
+    }
+}
+
+const MIN_ZOOM: f32 = 0.1;
+const MAX_ZOOM: f32 = 1000.0;
+
+#[derive(serde::Deserialize, serde::Serialize)]
+#[serde(default)]
+pub struct CameraSettings {
+    distance: f32,
+    fov: f32,
+    rotation_sensitivity: f32,
+    #[serde(skip)]
+    rotation: glam::Quat,
+    #[serde(skip)]
+    zoom: f32,
+}
+
+impl Default for CameraSettings {
+    fn default() -> Self {
+        Self {
+            distance: 1.0,
+            rotation_sensitivity: 0.01,
+            rotation: glam::Quat::default(),
+            zoom: 100.0,
+            fov: 1.0, // Roughly 60 degrees
         }
     }
 }
