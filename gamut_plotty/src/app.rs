@@ -228,14 +228,6 @@ impl eframe::App for GamutPlottyApp {
             ui.separator();
 
             Frame::group(ui.style()).show(ui, |ui| {
-                let scroll_delta = ui.ctx().input(|i| i.smooth_scroll_delta);
-                if scroll_delta.y != 0.0 {
-                    // positiv > scroll up; negative > scroll down
-                    let factor = 1.0 + scroll_delta.y * 0.001;
-                    self.camera_settings.zoom =
-                        (self.camera_settings.zoom * factor).clamp(MIN_ZOOM, MAX_ZOOM);
-                }
-
                 let gamut_boundary = gamut_data::get_gamut_boundary_data(
                     self.selected_observer,
                     self.selected_illuminant,
@@ -282,6 +274,16 @@ impl eframe::App for GamutPlottyApp {
                 }
 
                 let response = ui.allocate_response(ui.available_size(), Sense::drag());
+                if response.hovered() {
+                    let scroll_delta = ui.ctx().input(|i| i.smooth_scroll_delta);
+                    if scroll_delta.y != 0.0 {
+                        // positiv > scroll up; negative > scroll down
+                        let factor = 1.0 + scroll_delta.y * 0.001;
+                        self.camera_settings.zoom =
+                            (self.camera_settings.zoom * factor).clamp(MIN_ZOOM, MAX_ZOOM);
+                    }
+                }
+
                 if response.dragged() {
                     let delta = response.drag_delta();
                     let rot_y = glam::Quat::from_rotation_y(
