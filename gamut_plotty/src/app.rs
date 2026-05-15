@@ -1,8 +1,7 @@
 use color_calc::CIELAB;
 use egui::{
     Align, AtomExt, Button, CentralPanel, Color32, ComboBox, Frame, Image, IntoAtoms, Layout,
-    MenuBar, Panel, Pos2, Rect, Theme, ThemePreference, emath, epaint, hex_color, include_image,
-    pos2,
+    MenuBar, Panel, Pos2, Sense, Stroke, Theme, ThemePreference, include_image,
 };
 
 use crate::dummy_state::create_color_points;
@@ -228,67 +227,71 @@ impl eframe::App for GamutPlottyApp {
 
             ui.separator();
 
-            Frame::canvas(ui.style()).show(ui, |ui| {
-                ui.request_repaint();
-
-                let show_colors = true;
-                let color = if ui.visuals().dark_mode {
-                    Color32::from_additive_luminance(196)
-                } else {
-                    Color32::from_black_alpha(240)
-                };
-
-                let time = ui.input(|i| i.time);
-
-                let desired_size = ui.available_width() * egui::vec2(1.0, 0.35);
-                let (_id, rect) = ui.allocate_space(desired_size);
-
-                let to_screen = emath::RectTransform::from_to(
-                    Rect::from_x_y_ranges(0.0..=1.0, -1.0..=1.0),
-                    rect,
-                );
-
-                let mut shapes = vec![];
-
-                for &mode in &[2, 3, 5] {
-                    let mode = mode as f64;
-                    let n = 120;
-                    let speed = 1.5;
-
-                    let points: Vec<Pos2> = (0..=n)
-                        .map(|i| {
-                            let t = i as f64 / (n as f64);
-                            let amp = (time * speed * mode).sin() / mode;
-                            let y = amp * (t * std::f64::consts::TAU / 2.0 * mode).sin();
-                            to_screen * pos2(t as f32, y as f32)
-                        })
-                        .collect();
-
-                    let thickness = 10.0 / mode as f32;
-                    shapes.push(epaint::Shape::line(
-                        points,
-                        if show_colors {
-                            epaint::PathStroke::new_uv(thickness, move |rect, p| {
-                                let t = egui::remap(p.x, rect.x_range(), -1.0..=1.0).abs();
-                                let center_color = hex_color!("#5BCEFA");
-                                let outer_color = hex_color!("#F5A9B8");
-
-                                Color32::from_rgb(
-                                    egui::lerp(center_color.r() as f32..=outer_color.r() as f32, t)
-                                        as u8,
-                                    egui::lerp(center_color.g() as f32..=outer_color.g() as f32, t)
-                                        as u8,
-                                    egui::lerp(center_color.b() as f32..=outer_color.b() as f32, t)
-                                        as u8,
-                                )
-                            })
-                        } else {
-                            epaint::PathStroke::new(thickness, color)
-                        },
-                    ));
+            Frame::group(ui.style()).show(ui, |ui| {
+                let scroll_delta = ui.ctx().input(|i| i.smooth_scroll_delta);
+                if scroll_delta.y != 0.0 {
+                    // positiv > scroll up; negative > scroll down
+                    let factor = 1.0 + scroll_delta.y * 0.001;
+                    self.camera_settings.zoom =
+                        (self.camera_settings.zoom * factor).clamp(MIN_ZOOM, MAX_ZOOM);
                 }
 
-                ui.painter().extend(shapes);
+                let gamut_boundary = gamut_data::get_gamut_boundary_data(
+                    self.selected_observer,
+                    self.selected_illuminant,
+                );
+
+                let center = ui.available_size() / 2.0;
+                let painter = ui.painter();
+
+                let projected: Vec<Pos2> = gamut_boundary
+                    .iter()
+                    .map(|&(l, a, b)| {
+                        // Map Lab to Vec3: a=X, L=Y, b=Z
+                        let point = glam::Vec3::new(a as f32, l as f32, b as f32);
+                        // Rotate the point
+                        let rotated_point = self.camera_settings.rotation * point;
+                        // Translate (Move camera back)
+                        // We add a Z offset so the object is in front of the camera (0,0,0)
+                        let z = rotated_point.z + self.camera_settings.distance;
+                        // Clip (Don't draw if behind camera)
+                        if z <= 0.1 {
+                            return None;
+                        }
+                        // Perspective Divide
+                        // x_screen = x / z
+                        // y_screen = y / z
+                        let scale = self.camera_settings.zoom * self.camera_settings.fov / z;
+                        let x = rotated_point.x * scale;
+                        let y = rotated_point.y * scale;
+                        // Map to screen coordinates (Flip Y because screen Y is down)
+                        Some(Pos2::new(center.x + x, center.y - y))
+                    })
+                    .filter_map(|v| v)
+                    .collect();
+
+                // Draw lines
+                for i in 0..projected.len() - 1 {
+                    let (p1, p2) = (projected[i], projected[i + 1]);
+                    painter.line_segment([p1, p2], Stroke::new(1.0, Color32::GRAY));
+                }
+
+                // Close the loop
+                if let (Some(first), Some(last)) = (projected.first(), projected.last()) {
+                    painter.line_segment([*last, *first], Stroke::new(1.0, Color32::GRAY));
+                }
+
+                let response = ui.allocate_response(ui.available_size(), Sense::drag());
+                if response.dragged() {
+                    let delta = response.drag_delta();
+                    let rot_y = glam::Quat::from_rotation_y(
+                        -delta.x * self.camera_settings.rotation_sensitivity,
+                    );
+                    let rot_x = glam::Quat::from_rotation_x(
+                        -delta.y * self.camera_settings.rotation_sensitivity,
+                    );
+                    self.camera_settings.rotation = rot_y * rot_x * self.camera_settings.rotation;
+                }
             });
 
             ui.add(egui::github_link_file!(
