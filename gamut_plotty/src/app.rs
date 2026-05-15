@@ -148,6 +148,8 @@ impl eframe::App for GamutPlottyApp {
                         });
                     });
                     ui.ctx().set_theme(theme_preference);
+
+                    egui::warn_if_debug_build(ui);
                 });
             });
         });
@@ -172,10 +174,6 @@ impl eframe::App for GamutPlottyApp {
                 "https://github.com/Cielquan/GamutPlotty/blob/main/",
                 "Source code."
             ));
-
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
-                egui::warn_if_debug_build(ui);
-            });
         });
     }
 }
