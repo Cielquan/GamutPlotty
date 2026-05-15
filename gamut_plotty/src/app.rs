@@ -1,5 +1,8 @@
 use color_calc::CIELAB;
-use egui::{AtomExt, Button, IntoAtoms};
+use egui::{
+    Align, AtomExt, Button, CentralPanel, Image, IntoAtoms, Layout, MenuBar, Panel, Theme,
+    ThemePreference, include_image,
+};
 
 use crate::dummy_state::create_color_points;
 
@@ -54,10 +57,10 @@ impl eframe::App for GamutPlottyApp {
         // Put your widgets into a `SidePanel`, `TopBottomPanel`, `CentralPanel`, `Window` or `Area`.
         // For inspiration and more examples, go to https://emilk.github.io/egui
 
-        egui::Panel::top("top_panel").show_inside(ui, |ui| {
+        Panel::top("top_panel").show_inside(ui, |ui| {
             // The top panel is often a good place for a menu bar:
 
-            egui::MenuBar::new().ui(ui, |ui| {
+            MenuBar::new().ui(ui, |ui| {
                 // NOTE: no File->Quit on web pages!
                 let is_web = cfg!(target_arch = "wasm32");
                 if !is_web {
@@ -70,13 +73,13 @@ impl eframe::App for GamutPlottyApp {
                 }
 
                 let mut theme_preference = ui.options(|opt| opt.theme_preference);
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                     ui.horizontal(|ui| {
                         let current_system_theme =
                             if let Some(system_theme) = ui.input(|i| i.raw.system_theme) {
                                 match system_theme {
-                                    egui::Theme::Dark => "dark",
-                                    egui::Theme::Light => "light",
+                                    Theme::Dark => "dark",
+                                    Theme::Light => "light",
                                 }
                             } else {
                                 "unknown"
@@ -104,12 +107,10 @@ impl eframe::App for GamutPlottyApp {
                         theme_button(
                             ui,
                             &mut theme_preference,
-                            egui::ThemePreference::Light,
+                            ThemePreference::Light,
                             (
-                                egui::Image::new(egui::include_image!(
-                                    "../../assets/images/sun.svg"
-                                ))
-                                .atom_max_height_font_size(ui),
+                                Image::new(include_image!("../../assets/images/sun.svg"))
+                                    .atom_max_height_font_size(ui),
                                 "Light",
                             ),
                         )
@@ -118,11 +119,9 @@ impl eframe::App for GamutPlottyApp {
                         theme_button(
                             ui,
                             &mut theme_preference,
-                            egui::ThemePreference::Dark,
+                            ThemePreference::Dark,
                             (
-                                egui::Image::new(egui::include_image!(
-                                    "../../assets/images/moon.svg"
-                                )),
+                                Image::new(include_image!("../../assets/images/moon.svg")),
                                 "Dark",
                             ),
                         )
@@ -131,11 +130,9 @@ impl eframe::App for GamutPlottyApp {
                         theme_button(
                             ui,
                             &mut theme_preference,
-                            egui::ThemePreference::System,
+                            ThemePreference::System,
                             (
-                                egui::Image::new(egui::include_image!(
-                                    "../../assets/images/sun-moon.svg"
-                                )),
+                                Image::new(include_image!("../../assets/images/sun-moon.svg")),
                                 "System",
                             ),
                         )
@@ -154,7 +151,7 @@ impl eframe::App for GamutPlottyApp {
             });
         });
 
-        egui::CentralPanel::default().show_inside(ui, |ui| {
+        CentralPanel::default().show_inside(ui, |ui| {
             // The central panel the region left after adding TopPanel's and SidePanel's
             ui.heading(APP_NAME);
 
