@@ -1,4 +1,5 @@
 /// Generated with Illuminant: D50, Observer: CIE 1931 2 Degree Standard Observer
+/// Values correspond to (L, a, b)
 pub const GAMUT_BOUNDARY: [(f64, f64, f64); 471] = [
     (0.004288, 0.617187, 1.193783),
     (0.004810, 0.692975, 1.341056),

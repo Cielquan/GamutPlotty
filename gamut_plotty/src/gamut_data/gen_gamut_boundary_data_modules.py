@@ -59,6 +59,7 @@ for illuminant in illuminants:
         output_lines.append(
             f"/// Generated with Illuminant: {illuminant}, Observer: {observer}"
         )
+        output_lines.append("/// Values correspond to (L, a, b)")
 
         output_lines.append(
             f"pub const GAMUT_BOUNDARY: [(f64, f64, f64); {len(lab_data)}] = ["
