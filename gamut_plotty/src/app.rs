@@ -70,6 +70,32 @@ impl GamutPlottyApp {
             Default::default()
         }
     }
+
+    fn convert_3d_to_2d(&self, points: Vec<glam::Vec3>, center_position: Pos2) -> Vec<Pos2> {
+        points
+            .iter()
+            .map(|&point| {
+                // Rotate the point
+                let rotated_point = self.camera_settings.rotation * point;
+                // Translate (Move camera back)
+                // We add a Z offset so the object is in front of the camera (0,0,0)
+                let z = rotated_point.z + self.camera_settings.distance;
+                // Clip (Don't draw if behind camera)
+                if z <= 0.1 {
+                    return None;
+                }
+                // Perspective Divide
+                // x_screen = x / z
+                // y_screen = y / z
+                let scale = self.camera_settings.zoom * self.camera_settings.fov / z;
+                let x = rotated_point.x * scale;
+                let y = rotated_point.y * scale;
+                // Map to screen coordinates (Flip Y because screen Y is down)
+                Some(Pos2::new(center_position.x + x, center_position.y - y))
+            })
+            .filter_map(|v| v)
+            .collect()
+    }
 }
 
 impl eframe::App for GamutPlottyApp {
@@ -256,45 +282,32 @@ impl eframe::App for GamutPlottyApp {
                     self.camera_settings.rotation = rot_y * rot_x * self.camera_settings.rotation;
                 }
 
-                let gamut_boundary = gamut_data::get_gamut_boundary_data(
+                let gamut_boundary_points: Vec<glam::Vec3> = gamut_data::get_gamut_boundary_data(
                     self.selected_observer,
                     self.selected_illuminant,
-                );
+                )
+                .iter()
+                // Map Lab to Vec3: a=X, L=Y, b=Z
+                .map(|&(l, a, b)| glam::Vec3::new(a as f32, l as f32, b as f32))
+                .collect();
 
-                let projected: Vec<Pos2> = gamut_boundary
-                    .iter()
-                    .map(|&(l, a, b)| {
-                        // Map Lab to Vec3: a=X, L=Y, b=Z
-                        let point = glam::Vec3::new(a as f32, l as f32, b as f32);
-                        // Rotate the point
-                        let rotated_point = self.camera_settings.rotation * point;
-                        // Translate (Move camera back)
-                        // We add a Z offset so the object is in front of the camera (0,0,0)
-                        let z = rotated_point.z + self.camera_settings.distance;
-                        // Clip (Don't draw if behind camera)
-                        if z <= 0.1 {
-                            return None;
-                        }
-                        // Perspective Divide
-                        // x_screen = x / z
-                        // y_screen = y / z
-                        let scale = self.camera_settings.zoom * self.camera_settings.fov / z;
-                        let x = rotated_point.x * scale;
-                        let y = rotated_point.y * scale;
-                        // Map to screen coordinates (Flip Y because screen Y is down)
-                        Some(Pos2::new(group_center.x + x, group_center.y - y))
-                    })
-                    .filter_map(|v| v)
-                    .collect();
+                let projected_gamut_boundary_points =
+                    self.convert_3d_to_2d(gamut_boundary_points, group_center);
 
                 // Draw lines
-                for i in 0..projected.len() - 1 {
-                    let (p1, p2) = (projected[i], projected[i + 1]);
+                for i in 0..projected_gamut_boundary_points.len() - 1 {
+                    let (p1, p2) = (
+                        projected_gamut_boundary_points[i],
+                        projected_gamut_boundary_points[i + 1],
+                    );
                     painter.line_segment([p1, p2], Stroke::new(1.0, Color32::GRAY));
                 }
 
                 // Close the loop
-                if let (Some(first), Some(last)) = (projected.first(), projected.last()) {
+                if let (Some(first), Some(last)) = (
+                    projected_gamut_boundary_points.first(),
+                    projected_gamut_boundary_points.last(),
+                ) {
                     painter.line_segment([*last, *first], Stroke::new(1.0, Color32::GRAY));
                 }
             });
