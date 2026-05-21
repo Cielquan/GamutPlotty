@@ -37,6 +37,7 @@ const MAX_ZOOM: f32 = 1000.0;
 #[serde(default)]
 pub struct CameraSettings {
     distance: f32,
+    height: f32,
     fov: f32,
     rotation_sensitivity: f32,
     #[serde(skip)]
@@ -49,6 +50,7 @@ impl Default for CameraSettings {
     fn default() -> Self {
         Self {
             distance: 1.0,
+            height: 50.0,
             rotation_sensitivity: 0.01,
             rotation: glam::Quat::default(),
             zoom: 100.0,
@@ -72,11 +74,15 @@ impl GamutPlottyApp {
     }
 
     fn convert_3d_to_2d(&self, points: Vec<glam::Vec3>, center_position: Pos2) -> Vec<Pos2> {
+        let camera_position = glam::Vec3::new(0.0, self.camera_settings.height, 0.0);
+
         points
             .iter()
             .map(|&point| {
+                // Translate the point
+                let translated_point = point - camera_position;
                 // Rotate the point
-                let rotated_point = self.camera_settings.rotation * point;
+                let rotated_point = self.camera_settings.rotation * translated_point;
                 // Translate (Move camera back)
                 // We add a Z offset so the object is in front of the camera (0,0,0)
                 let z = rotated_point.z + self.camera_settings.distance;
