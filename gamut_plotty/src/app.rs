@@ -295,11 +295,9 @@ impl eframe::App for GamutPlottyApp {
                     self.convert_3d_to_2d(gamut_boundary_points, group_center);
 
                 // Draw lines
-                for i in 0..projected_gamut_boundary_points.len() - 1 {
-                    let (p1, p2) = (
-                        projected_gamut_boundary_points[i],
-                        projected_gamut_boundary_points[i + 1],
-                    );
+                for window in projected_gamut_boundary_points.windows(2) {
+                    let p1 = window[0];
+                    let p2 = window[1];
                     painter.line_segment([p1, p2], Stroke::new(1.0, Color32::GRAY));
                 }
 
