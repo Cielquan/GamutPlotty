@@ -314,6 +314,96 @@ impl eframe::App for GamutPlottyApp {
                 ) {
                     painter.line_segment([*last, *first], Stroke::new(1.0, Color32::GRAY));
                 }
+
+                // X axis (a+)
+                {
+                    let points: Vec<glam::Vec3> = (0..=200)
+                        .map(|i| glam::Vec3::new(i as f32, self.camera_settings.height, 0.0))
+                        .collect();
+
+                    let projected_points = self.convert_3d_to_2d(points, group_center);
+
+                    for window in projected_points.windows(2) {
+                        let p1 = window[0];
+                        let p2 = window[1];
+                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::RED));
+                    }
+                }
+
+                // X axis (a-)
+                {
+                    let points: Vec<glam::Vec3> = (-200..=0)
+                        .map(|i| glam::Vec3::new(i as f32, self.camera_settings.height, 0.0))
+                        .collect();
+
+                    let projected_points = self.convert_3d_to_2d(points, group_center);
+
+                    for window in projected_points.windows(2) {
+                        let p1 = window[0];
+                        let p2 = window[1];
+                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::GREEN));
+                    }
+                }
+
+                // Y axis (l<=100)
+                {
+                    let points: Vec<glam::Vec3> = (0..=100)
+                        .map(|i| glam::Vec3::new(0.0, i as f32, 0.0))
+                        .collect();
+
+                    let projected_points = self.convert_3d_to_2d(points, group_center);
+
+                    for window in projected_points.windows(2) {
+                        let p1 = window[0];
+                        let p2 = window[1];
+                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::BLACK));
+                    }
+                }
+
+                // Y axis (l<100)
+                {
+                    let points: Vec<glam::Vec3> = (100..=110)
+                        .map(|i| glam::Vec3::new(0.0, i as f32, 0.0))
+                        .collect();
+
+                    let projected_points = self.convert_3d_to_2d(points, group_center);
+
+                    for window in projected_points.windows(2) {
+                        let p1 = window[0];
+                        let p2 = window[1];
+                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::GRAY));
+                    }
+                }
+
+                // Z axis (b+)
+                {
+                    let points: Vec<glam::Vec3> = (-200..=0)
+                        .map(|i| glam::Vec3::new(0.0, self.camera_settings.height, i as f32))
+                        .collect();
+
+                    let projected_points = self.convert_3d_to_2d(points, group_center);
+
+                    for window in projected_points.windows(2) {
+                        let p1 = window[0];
+                        let p2 = window[1];
+                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::YELLOW));
+                    }
+                }
+
+                // Z axis (b-)
+                {
+                    let points: Vec<glam::Vec3> = (0..=200)
+                        .map(|i| glam::Vec3::new(0.0, self.camera_settings.height, i as f32))
+                        .collect();
+
+                    let projected_points = self.convert_3d_to_2d(points, group_center);
+
+                    for window in projected_points.windows(2) {
+                        let p1 = window[0];
+                        let p2 = window[1];
+                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::BLUE));
+                    }
+                }
             });
 
             ui.add(egui::github_link_file!(
