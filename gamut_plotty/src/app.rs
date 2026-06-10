@@ -49,7 +49,7 @@ pub struct CameraSettings {
 impl Default for CameraSettings {
     fn default() -> Self {
         Self {
-            distance: 1.0,
+            distance: 250.0,
             height: 50.0,
             rotation_sensitivity: 0.01,
             rotation: glam::Quat::default(),
