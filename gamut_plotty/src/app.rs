@@ -291,6 +291,39 @@ impl eframe::App for GamutPlottyApp {
 
             ui.separator();
 
+            ui.horizontal(|ui| {
+                ui.add(Label::new("Distance:"));
+                ui.add(DragValue::new(&mut self.camera_settings.distance).speed(1.0));
+
+                ui.separator();
+
+                ui.add(Label::new("Height:"));
+                ui.add(DragValue::new(&mut self.camera_settings.height).speed(1.0));
+
+                ui.separator();
+
+                ui.add(Label::new("Rot. sen.:"));
+                ui.add(DragValue::new(&mut self.camera_settings.rotation_sensitivity).speed(0.01));
+
+                ui.separator();
+
+                ui.add(Label::new("Zoom:"));
+                ui.add(DragValue::new(&mut self.camera_settings.zoom).speed(1.0));
+
+                ui.separator();
+
+                ui.add(Label::new("FOV:"));
+                ui.add(DragValue::new(&mut self.camera_settings.fov).speed(0.01));
+
+                ui.separator();
+
+                if ui.add(Button::new("Reset")).clicked() {
+                    self.camera_settings = CameraSettings::default();
+                }
+            });
+
+            ui.separator();
+
             Frame::group(ui.style()).show(ui, |ui| {
                 let group_rect = ui.response().rect;
                 let group_center = group_rect.center();
