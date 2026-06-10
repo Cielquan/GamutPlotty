@@ -79,20 +79,17 @@ impl GamutPlottyApp {
         points
             .iter()
             .map(|&point| {
-                // Translate the point
                 let translated_point = point - camera_position;
-                // Rotate the point
                 let rotated_point = self.camera_settings.rotation * translated_point;
                 // Translate (Move camera back)
                 // We add a Z offset so the object is in front of the camera (0,0,0)
                 let z = rotated_point.z + self.camera_settings.distance;
+
                 // Clip (Don't draw if behind camera)
                 if z <= 0.1 {
                     return None;
                 }
-                // Perspective Divide
-                // x_screen = x / z
-                // y_screen = y / z
+
                 let scale = self.camera_settings.zoom * self.camera_settings.fov / z;
                 let x = rotated_point.x * scale;
                 let y = rotated_point.y * scale;
@@ -101,6 +98,41 @@ impl GamutPlottyApp {
             })
             .filter_map(|v| v)
             .collect()
+    }
+
+    fn convert_3d_to_2d_with_vis_map(
+        &self,
+        points: Vec<glam::Vec3>,
+        center_position: Pos2,
+    ) -> (Vec<Pos2>, Vec<bool>) {
+        let camera_position = glam::Vec3::new(0.0, self.camera_settings.height, 0.0);
+
+        let mut projected_coords = Vec::with_capacity(points.len());
+        let mut visibility_map = Vec::with_capacity(points.len());
+
+        for &point in &points {
+            let translated_point = point - camera_position;
+            let rotated_point = self.camera_settings.rotation * translated_point;
+            // Translate (Move camera back)
+            // We add a Z offset so the object is in front of the camera (0,0,0)
+            let z = rotated_point.z + self.camera_settings.distance;
+
+            if z > 0.1 {
+                let scale = self.camera_settings.zoom * self.camera_settings.fov / z;
+                let x = rotated_point.x * scale;
+                let y = rotated_point.y * scale;
+
+                // Map to screen coordinates (Flip Y because screen Y is down)
+                projected_coords.push(Pos2::new(center_position.x + x, center_position.y - y));
+                visibility_map.push(true);
+            } else {
+                // Add a dummy point to maintain alignment
+                projected_coords.push(Pos2::new(center_position.x, center_position.y));
+                visibility_map.push(false);
+            }
+        }
+
+        (projected_coords, visibility_map)
     }
 }
 
