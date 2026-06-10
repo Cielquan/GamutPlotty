@@ -73,7 +73,11 @@ impl GamutPlottyApp {
         }
     }
 
-    fn convert_3d_to_2d(&self, points: Vec<glam::Vec3>, center_position: Pos2) -> Vec<Pos2> {
+    fn convert_3d_to_2d(
+        &self,
+        points: Vec<glam::Vec3>,
+        center_position: Pos2,
+    ) -> Vec<Option<Pos2>> {
         let camera_position = glam::Vec3::new(0.0, self.camera_settings.height, 0.0);
 
         points
@@ -96,7 +100,6 @@ impl GamutPlottyApp {
                 // Map to screen coordinates (Flip Y because screen Y is down)
                 Some(Pos2::new(center_position.x + x, center_position.y - y))
             })
-            .filter_map(|v| v)
             .collect()
     }
 
