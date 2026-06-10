@@ -161,6 +161,61 @@ impl GamutPlottyApp {
             }
         }
     }
+
+    // TODO: remove
+    fn draw_cube_frame(&self, painter: &egui::Painter, center: egui::Pos2) {
+        let min_x = -200.0;
+        let max_x = 200.0;
+        let min_y = 0.0;
+        let max_y = 110.0;
+        let min_z = -200.0;
+        let max_z = 200.0;
+
+        // Define the 8 corners of the cube
+        let corners = vec![
+            glam::Vec3::new(min_x, min_y, min_z), // 0: Bottom-Front-Left
+            glam::Vec3::new(max_x, min_y, min_z), // 1: Bottom-Front-Right
+            glam::Vec3::new(max_x, min_y, max_z), // 2: Bottom-Back-Right
+            glam::Vec3::new(min_x, min_y, max_z), // 3: Bottom-Back-Left
+            glam::Vec3::new(min_x, max_y, min_z), // 4: Top-Front-Left
+            glam::Vec3::new(max_x, max_y, min_z), // 5: Top-Front-Right
+            glam::Vec3::new(max_x, max_y, max_z), // 6: Top-Back-Right
+            glam::Vec3::new(min_x, max_y, max_z), // 7: Top-Back-Left
+        ];
+
+        // Define the 12 edges by index pairs
+        let edges = [
+            // Bottom face
+            (0, 1),
+            (1, 2),
+            (2, 3),
+            (3, 0),
+            // Top face
+            (4, 5),
+            (5, 6),
+            (6, 7),
+            (7, 4),
+            // Vertical connections
+            (0, 4),
+            (1, 5),
+            (2, 6),
+            (3, 7),
+        ];
+
+        let projected = self.convert_3d_to_2d(corners, center);
+
+        let color = Color32::from_rgb(200, 200, 200);
+        let line_thickness = 1.5;
+
+        // Draw edges
+        for (start_idx, end_idx) in edges {
+            if let (Some(p1), Some(p2)) = (projected[start_idx], projected[end_idx]) {
+                painter.line_segment([p1, p2], egui::Stroke::new(line_thickness, color));
+            }
+            // If either point is behind camera, we simply don't draw that edge segment.
+            // This creates a clean "broken" look rather than stretching across the screen.
+        }
+    }
 }
 
 impl eframe::App for GamutPlottyApp {
@@ -427,6 +482,8 @@ impl eframe::App for GamutPlottyApp {
                         .collect();
                     self.draw_axis_segment(&painter, points, group_center, Color32::BLUE);
                 }
+
+                self.draw_cube_frame(&painter, group_center);
             });
 
             ui.add(egui::github_link_file!(
