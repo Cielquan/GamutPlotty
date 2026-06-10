@@ -352,7 +352,7 @@ impl eframe::App for GamutPlottyApp {
                             ));
                         });
                     });
-                    ui.ctx().set_theme(theme_preference);
+                    ui.set_theme(theme_preference);
 
                     egui::warn_if_debug_build(ui);
                 });
@@ -471,7 +471,7 @@ impl eframe::App for GamutPlottyApp {
                 let is_hovered = response.hovered();
 
                 if is_hovered {
-                    let scroll_delta = ui.ctx().input(|i| i.smooth_scroll_delta);
+                    let scroll_delta = ui.input(|i| i.smooth_scroll_delta);
 
                     // Zoom (Scroll)
                     if scroll_delta.y != 0.0 {
