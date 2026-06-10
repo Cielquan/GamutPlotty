@@ -1,7 +1,7 @@
 use color_calc::CIELAB;
 use egui::{
     Align, AtomExt, Button, CentralPanel, Color32, ComboBox, DragValue, Frame, Image, IntoAtoms,
-    Label, Layout, MenuBar, Panel, Pos2, Sense, Theme, ThemePreference, include_image,
+    Label, Layout, MenuBar, Panel, Pos2, RichText, Sense, Theme, ThemePreference, include_image,
 };
 
 use crate::dummy_state::create_color_points;
@@ -30,31 +30,71 @@ impl Default for GamutPlottyApp {
     }
 }
 
-const MIN_ZOOM: f32 = 0.1;
-const MAX_ZOOM: f32 = 1000.0;
-
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)]
 pub struct CameraSettings {
     distance: f32,
-    height: f32,
     fov: f32,
+    zoom_sensitivity: f32,
+    pan_sensitivity: f32,
+    depth_sensitivity: f32,
     rotation_sensitivity: f32,
     #[serde(skip)]
-    rotation: glam::Quat,
-    #[serde(skip)]
     zoom: f32,
+    #[serde(skip)]
+    position: glam::Vec3,
+    #[serde(skip)]
+    rotation: glam::Quat,
 }
 
 impl Default for CameraSettings {
     fn default() -> Self {
         Self {
             distance: 250.0,
-            height: 50.0,
-            rotation_sensitivity: 0.01,
-            rotation: glam::Quat::default(),
-            zoom: 100.0,
             fov: 1.0, // Roughly 60 degrees
+            zoom_sensitivity: 0.001,
+            pan_sensitivity: 0.5,
+            depth_sensitivity: 2.0,
+            rotation_sensitivity: 0.01,
+            zoom: 100.0,
+            position: glam::Vec3::new(0.0, 0.0, 0.0),
+            rotation: glam::Quat::default(),
+        }
+    }
+}
+
+impl CameraSettings {
+    const MIN_ZOOM: f32 = 0.1;
+    const MAX_ZOOM: f32 = 1000.0;
+
+    fn with_reset_settings(current: &Self) -> Self {
+        let defaults = Self::default();
+
+        Self {
+            distance: defaults.distance,
+            fov: defaults.fov,
+            zoom_sensitivity: defaults.zoom_sensitivity,
+            pan_sensitivity: defaults.pan_sensitivity,
+            depth_sensitivity: defaults.depth_sensitivity,
+            rotation_sensitivity: defaults.rotation_sensitivity,
+            zoom: current.zoom,
+            position: current.position,
+            rotation: current.rotation,
+        }
+    }
+
+    fn with_reset_location(current: &Self) -> Self {
+        let defaults = Self::default();
+        Self {
+            distance: current.distance,
+            fov: current.fov,
+            zoom_sensitivity: current.zoom_sensitivity,
+            pan_sensitivity: current.pan_sensitivity,
+            depth_sensitivity: current.depth_sensitivity,
+            rotation_sensitivity: current.rotation_sensitivity,
+            zoom: defaults.zoom,
+            position: defaults.position,
+            rotation: defaults.rotation,
         }
     }
 }
@@ -78,12 +118,10 @@ impl GamutPlottyApp {
         points: Vec<glam::Vec3>,
         center_position: Pos2,
     ) -> Vec<Option<Pos2>> {
-        let camera_position = glam::Vec3::new(0.0, self.camera_settings.height, 0.0);
-
         points
             .iter()
             .map(|&point| {
-                let translated_point = point - camera_position;
+                let translated_point = point - self.camera_settings.position;
                 let rotated_point = self.camera_settings.rotation * translated_point;
                 // Translate (Move camera back)
                 // We add a Z offset so the object is in front of the camera (0,0,0)
@@ -108,13 +146,11 @@ impl GamutPlottyApp {
         points: Vec<glam::Vec3>,
         center_position: Pos2,
     ) -> (Vec<Pos2>, Vec<bool>) {
-        let camera_position = glam::Vec3::new(0.0, self.camera_settings.height, 0.0);
-
         let mut projected_coords = Vec::with_capacity(points.len());
         let mut visibility_map = Vec::with_capacity(points.len());
 
         for &point in &points {
-            let translated_point = point - camera_position;
+            let translated_point = point - self.camera_settings.position;
             let rotated_point = self.camera_settings.rotation * translated_point;
             // Translate (Move camera back)
             // We add a Z offset so the object is in front of the camera (0,0,0)
@@ -374,35 +410,55 @@ impl eframe::App for GamutPlottyApp {
             ui.separator();
 
             ui.horizontal(|ui| {
+                ui.label(RichText::new("Camera Settings").heading());
+                ui.separator();
                 ui.add(Label::new("Distance:"));
                 ui.add(DragValue::new(&mut self.camera_settings.distance).speed(1.0));
-
                 ui.separator();
-
-                ui.add(Label::new("Height:"));
-                ui.add(DragValue::new(&mut self.camera_settings.height).speed(1.0));
-
-                ui.separator();
-
-                ui.add(Label::new("Rot. sen.:"));
-                ui.add(DragValue::new(&mut self.camera_settings.rotation_sensitivity).speed(0.01));
-
-                ui.separator();
-
-                ui.add(Label::new("Zoom:"));
-                ui.add(DragValue::new(&mut self.camera_settings.zoom).speed(1.0));
-
-                ui.separator();
-
                 ui.add(Label::new("FOV:"));
                 ui.add(DragValue::new(&mut self.camera_settings.fov).speed(0.01));
-
                 ui.separator();
-
-                if ui.add(Button::new("Reset")).clicked() {
-                    self.camera_settings = CameraSettings::default();
+                ui.add(Label::new("Zoom sensitivity:"));
+                ui.add(DragValue::new(&mut self.camera_settings.zoom_sensitivity).speed(0.0001));
+                ui.separator();
+                ui.add(Label::new("Pan sensitivity:"));
+                ui.add(DragValue::new(&mut self.camera_settings.pan_sensitivity).speed(0.01));
+                ui.separator();
+                ui.add(Label::new("Depth sensitivity:"));
+                ui.add(DragValue::new(&mut self.camera_settings.depth_sensitivity).speed(0.01));
+                ui.separator();
+                ui.add(Label::new("Rotation sensitivity:"));
+                ui.add(DragValue::new(&mut self.camera_settings.rotation_sensitivity).speed(0.001));
+                ui.separator();
+                if ui.add(Button::new("Reset Settings")).clicked() {
+                    self.camera_settings =
+                        CameraSettings::with_reset_settings(&self.camera_settings);
                 }
             });
+
+            ui.separator();
+
+            Frame::new()
+                // .fill(Color32::from_rgb(50, 50, 50))
+                .corner_radius(4.0)
+                .show(ui, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.label(RichText::new("Camera Controls").heading());
+                        ui.separator();
+                        ui.label("Scroll: Zoom");
+                        ui.separator();
+                        ui.label("Scroll Drag: Rotate");
+                        ui.separator();
+                        ui.label("Drag: Pan (X/Y)");
+                        ui.separator();
+                        ui.label("Page Up/Down: Depth (Z)");
+                        ui.separator();
+                        if ui.add(Button::new("Reset Camera")).clicked() {
+                            self.camera_settings =
+                                CameraSettings::with_reset_location(&self.camera_settings);
+                        }
+                    });
+                });
 
             ui.separator();
 
@@ -411,28 +467,54 @@ impl eframe::App for GamutPlottyApp {
                 let group_center = group_rect.center();
                 let painter = ui.painter().with_clip_rect(group_rect);
 
-                let response = ui.allocate_response(ui.available_size(), Sense::drag());
+                let response = ui.allocate_response(ui.available_size(), Sense::click_and_drag());
                 let is_hovered = response.hovered();
 
                 if is_hovered {
                     let scroll_delta = ui.ctx().input(|i| i.smooth_scroll_delta);
+
+                    // Zoom (Scroll)
                     if scroll_delta.y != 0.0 {
                         // positiv > scroll up; negative > scroll down
-                        let factor = 1.0 + scroll_delta.y * 0.001;
-                        self.camera_settings.zoom =
-                            (self.camera_settings.zoom * factor).clamp(MIN_ZOOM, MAX_ZOOM);
+                        let factor = 1.0 + scroll_delta.y * self.camera_settings.zoom_sensitivity;
+                        self.camera_settings.zoom = (self.camera_settings.zoom * factor)
+                            .clamp(CameraSettings::MIN_ZOOM, CameraSettings::MAX_ZOOM);
                     }
-                }
 
-                if is_hovered && response.dragged() {
-                    let delta = response.drag_delta();
-                    let rot_y = glam::Quat::from_rotation_y(
-                        -delta.x * self.camera_settings.rotation_sensitivity,
-                    );
-                    let rot_x = glam::Quat::from_rotation_x(
-                        -delta.y * self.camera_settings.rotation_sensitivity,
-                    );
-                    self.camera_settings.rotation = rot_y * rot_x * self.camera_settings.rotation;
+                    let drag_delta = response.drag_delta();
+
+                    // Rotate (Middle Drag)
+                    if response.dragged_by(egui::PointerButton::Middle) {
+                        let rot_y = glam::Quat::from_rotation_y(
+                            -drag_delta.x * self.camera_settings.rotation_sensitivity,
+                        );
+                        let rot_x = glam::Quat::from_rotation_x(
+                            -drag_delta.y * self.camera_settings.rotation_sensitivity,
+                        );
+                        self.camera_settings.rotation =
+                            rot_y * rot_x * self.camera_settings.rotation;
+                    }
+
+                    // Pan X/Y (Left Drag)
+                    if response.dragged_by(egui::PointerButton::Primary) {
+                        self.camera_settings.position.x -=
+                            drag_delta.x * self.camera_settings.pan_sensitivity;
+                        self.camera_settings.position.y +=
+                            drag_delta.y * self.camera_settings.pan_sensitivity;
+                    }
+
+                    let dt = ui.input(|i| i.stable_dt);
+
+                    // Move Z (Page UUp/Down)
+                    if ui.input(|i| i.key_down(egui::Key::PageUp)) {
+                        // Move In
+                        self.camera_settings.position.z +=
+                            self.camera_settings.depth_sensitivity * dt * 60.0;
+                    } else if ui.input(|i| i.key_down(egui::Key::PageDown)) {
+                        // Move Away
+                        self.camera_settings.position.z -=
+                            self.camera_settings.depth_sensitivity * dt * 60.0;
+                    }
                 }
 
                 let y_axis_intersection = 50.0;
