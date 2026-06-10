@@ -1,7 +1,7 @@
 use color_calc::CIELAB;
 use egui::{
-    Align, AtomExt, Button, CentralPanel, Color32, ComboBox, Frame, Image, IntoAtoms, Layout,
-    MenuBar, Panel, Pos2, Sense, Stroke, Theme, ThemePreference, include_image,
+    Align, AtomExt, Button, CentralPanel, Color32, ComboBox, DragValue, Frame, Image, IntoAtoms,
+    Label, Layout, MenuBar, Panel, Pos2, Sense, Theme, ThemePreference, include_image,
 };
 
 use crate::dummy_state::create_color_points;
