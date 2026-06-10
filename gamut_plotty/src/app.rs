@@ -435,21 +435,7 @@ impl eframe::App for GamutPlottyApp {
                     self.camera_settings.rotation = rot_y * rot_x * self.camera_settings.rotation;
                 }
 
-                // X axis (a+)
-                {
-                    let points: Vec<glam::Vec3> = (0..=200)
-                        .map(|i| glam::Vec3::new(i as f32, self.camera_settings.height, 0.0))
-                        .collect();
-                    self.draw_axis_segment(&painter, points, group_center, Color32::RED);
-                }
-
-                // X axis (a-)
-                {
-                    let points: Vec<glam::Vec3> = (-200..=0)
-                        .map(|i| glam::Vec3::new(i as f32, self.camera_settings.height, 0.0))
-                        .collect();
-                    self.draw_axis_segment(&painter, points, group_center, Color32::GREEN);
-                }
+                let y_axis_intersection = 50.0;
 
                 // Y axis (l<=100)
                 {
@@ -467,10 +453,26 @@ impl eframe::App for GamutPlottyApp {
                     self.draw_axis_segment(&painter, points, group_center, Color32::GRAY);
                 }
 
+                // X axis (a+)
+                {
+                    let points: Vec<glam::Vec3> = (0..=200)
+                        .map(|i| glam::Vec3::new(i as f32, y_axis_intersection, 0.0))
+                        .collect();
+                    self.draw_axis_segment(&painter, points, group_center, Color32::RED);
+                }
+
+                // X axis (a-)
+                {
+                    let points: Vec<glam::Vec3> = (-200..=0)
+                        .map(|i| glam::Vec3::new(i as f32, y_axis_intersection, 0.0))
+                        .collect();
+                    self.draw_axis_segment(&painter, points, group_center, Color32::GREEN);
+                }
+
                 // Z axis (b+)
                 {
                     let points: Vec<glam::Vec3> = (-200..=0)
-                        .map(|i| glam::Vec3::new(0.0, self.camera_settings.height, i as f32))
+                        .map(|i| glam::Vec3::new(0.0, y_axis_intersection, i as f32))
                         .collect();
                     self.draw_axis_segment(&painter, points, group_center, Color32::YELLOW);
                 }
@@ -478,7 +480,7 @@ impl eframe::App for GamutPlottyApp {
                 // Z axis (b-)
                 {
                     let points: Vec<glam::Vec3> = (0..=200)
-                        .map(|i| glam::Vec3::new(0.0, self.camera_settings.height, i as f32))
+                        .map(|i| glam::Vec3::new(0.0, y_axis_intersection, i as f32))
                         .collect();
                     self.draw_axis_segment(&painter, points, group_center, Color32::BLUE);
                 }
