@@ -137,6 +137,30 @@ impl GamutPlottyApp {
 
         (projected_coords, visibility_map)
     }
+
+    fn draw_axis_segment(
+        &self,
+        painter: &egui::Painter,
+        points: Vec<glam::Vec3>,
+        center: egui::Pos2,
+        color: egui::Color32,
+    ) {
+        let mut prev_visible_point: Option<egui::Pos2> = None;
+        for point in self.convert_3d_to_2d(points, center) {
+            if let Some(point_val) = point {
+                // If we have a previous visible point, draw the line
+                if let Some(prev) = prev_visible_point {
+                    painter.line_segment([prev, point_val], egui::Stroke::new(1.0, color));
+                }
+                // Update previous
+                prev_visible_point = Some(point_val);
+            } else {
+                // Point is behind camera. Break the line.
+                // Next time we see a point, we start a NEW segment, not connecting to the old one.
+                prev_visible_point = None;
+            }
+        }
+    }
 }
 
 impl eframe::App for GamutPlottyApp {
@@ -361,14 +385,7 @@ impl eframe::App for GamutPlottyApp {
                     let points: Vec<glam::Vec3> = (0..=200)
                         .map(|i| glam::Vec3::new(i as f32, self.camera_settings.height, 0.0))
                         .collect();
-
-                    let projected_points = self.convert_3d_to_2d(points, group_center);
-
-                    for window in projected_points.windows(2) {
-                        let p1 = window[0];
-                        let p2 = window[1];
-                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::RED));
-                    }
+                    self.draw_axis_segment(&painter, points, group_center, Color32::RED);
                 }
 
                 // X axis (a-)
@@ -376,14 +393,7 @@ impl eframe::App for GamutPlottyApp {
                     let points: Vec<glam::Vec3> = (-200..=0)
                         .map(|i| glam::Vec3::new(i as f32, self.camera_settings.height, 0.0))
                         .collect();
-
-                    let projected_points = self.convert_3d_to_2d(points, group_center);
-
-                    for window in projected_points.windows(2) {
-                        let p1 = window[0];
-                        let p2 = window[1];
-                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::GREEN));
-                    }
+                    self.draw_axis_segment(&painter, points, group_center, Color32::GREEN);
                 }
 
                 // Y axis (l<=100)
@@ -391,14 +401,7 @@ impl eframe::App for GamutPlottyApp {
                     let points: Vec<glam::Vec3> = (0..=100)
                         .map(|i| glam::Vec3::new(0.0, i as f32, 0.0))
                         .collect();
-
-                    let projected_points = self.convert_3d_to_2d(points, group_center);
-
-                    for window in projected_points.windows(2) {
-                        let p1 = window[0];
-                        let p2 = window[1];
-                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::BLACK));
-                    }
+                    self.draw_axis_segment(&painter, points, group_center, Color32::BLACK);
                 }
 
                 // Y axis (l<100)
@@ -406,14 +409,7 @@ impl eframe::App for GamutPlottyApp {
                     let points: Vec<glam::Vec3> = (100..=110)
                         .map(|i| glam::Vec3::new(0.0, i as f32, 0.0))
                         .collect();
-
-                    let projected_points = self.convert_3d_to_2d(points, group_center);
-
-                    for window in projected_points.windows(2) {
-                        let p1 = window[0];
-                        let p2 = window[1];
-                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::GRAY));
-                    }
+                    self.draw_axis_segment(&painter, points, group_center, Color32::GRAY);
                 }
 
                 // Z axis (b+)
@@ -421,14 +417,7 @@ impl eframe::App for GamutPlottyApp {
                     let points: Vec<glam::Vec3> = (-200..=0)
                         .map(|i| glam::Vec3::new(0.0, self.camera_settings.height, i as f32))
                         .collect();
-
-                    let projected_points = self.convert_3d_to_2d(points, group_center);
-
-                    for window in projected_points.windows(2) {
-                        let p1 = window[0];
-                        let p2 = window[1];
-                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::YELLOW));
-                    }
+                    self.draw_axis_segment(&painter, points, group_center, Color32::YELLOW);
                 }
 
                 // Z axis (b-)
@@ -436,14 +425,7 @@ impl eframe::App for GamutPlottyApp {
                     let points: Vec<glam::Vec3> = (0..=200)
                         .map(|i| glam::Vec3::new(0.0, self.camera_settings.height, i as f32))
                         .collect();
-
-                    let projected_points = self.convert_3d_to_2d(points, group_center);
-
-                    for window in projected_points.windows(2) {
-                        let p1 = window[0];
-                        let p2 = window[1];
-                        painter.line_segment([p1, p2], Stroke::new(1.0, Color32::BLUE));
-                    }
+                    self.draw_axis_segment(&painter, points, group_center, Color32::BLUE);
                 }
             });
 
