@@ -1,5 +1,5 @@
 [package]
-name = "gamut_plotty_lib"
+name = "gamut_plotty_ext"
 description = "A tool to visualize different color points in a Gamut color space."
 version = "0.1.0"
 edition = "2024"
@@ -9,7 +9,11 @@ rust-version = "1.92"
 all-features = true
 targets = ["x86_64-unknown-linux-gnu", "x86_64-pc-windows-gnu", "wasm32-unknown-unknown"]
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
 color_calc = { path = "../color_calc" }
 serde = { workspace = true }
 glam = "0.33.1"
+godot = { version = "0.5.3", features = ["experimental-threads"] }

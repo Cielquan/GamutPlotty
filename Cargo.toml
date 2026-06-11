@@ -2,7 +2,7 @@
 members = [
     "color_calc_core",
     "color_calc",
-    "gamut_plotty_lib",
+    "gamut_plotty_ext",
 ]
 resolver = "3"
 
