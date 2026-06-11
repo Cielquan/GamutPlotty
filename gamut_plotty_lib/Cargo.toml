@@ -1,5 +1,5 @@
 [package]
-name = "gamut_plotty"
+name = "gamut_plotty_lib"
 description = "A tool to visualize different color points in a Gamut color space."
 version = "0.1.0"
 edition = "2024"

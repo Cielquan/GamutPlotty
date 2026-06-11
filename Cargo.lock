@@ -82,7 +82,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gamut_plotty"
+name = "gamut_plotty_lib"
 version = "0.1.0"
 dependencies = [
  "color_calc",
