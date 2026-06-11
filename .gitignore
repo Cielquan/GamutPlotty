@@ -93,3 +93,11 @@ logs/
 **/*.rs.bk
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# --------------------------------------------------------------------------------------
+# | Godot                                                                              |
+# --------------------------------------------------------------------------------------
+
+# Godot 4+ specific ignores
+.godot/
+/android/
