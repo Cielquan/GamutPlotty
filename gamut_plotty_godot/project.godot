@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="GamutPlotty"
+run/main_scene="uid://ciigo0qxxt8wm"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="uid://j5pq27a7c5ry"
 
