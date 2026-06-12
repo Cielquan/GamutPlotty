@@ -1,3 +1,8 @@
 [gd_scene format=3 uid="uid://ciigo0qxxt8wm"]
 
+[ext_resource type="PackedScene" uid="uid://db4b3hi7bink4" path="res://scenes/camera.tscn" id="1_o5qli"]
+
 [node name="Main" type="Node3D" unique_id=100174980]
+
+[node name="Camera3D" parent="." unique_id=764258631 instance=ExtResource("1_o5qli")]
+transform = Transform3D(0.70710677, 0, 0.70710677, 0, 1, 0, -0.70710677, 0, 0.70710677, 1.75, 0, 1.75)
