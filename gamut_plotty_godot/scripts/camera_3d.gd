@@ -2,8 +2,8 @@ extends Camera3D
 
 # Movement Speed
 var base_move_speed := 5.0
-var sprint_move_speed := 3.0
-var mouse_sensitivity := 0.02
+var sprint_move_speed := 4.0
+var mouse_sensitivity := 0.05
 
 # Camera rotation
 var pitch := 0.0 # Up/Down
