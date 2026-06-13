@@ -71,7 +71,7 @@ for illuminant in illuminants:
                 output_lines.append(f"    ({l:.6f}, {a:.6f}, {b:.6f}),")
                 count += 1
 
-        output_lines.append("];")
+        output_lines.append("];\n")
         print(f"Generated {count} valid points.")
 
         file_name = f"cie_{illuminant}_{observers[observer]}.rs".casefold()
